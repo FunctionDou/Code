@@ -27,6 +27,8 @@ void Pthread_create(pthread_t *id, void *(*fun)(void *), void *arg)
     }
 }
 
+
+
 // 线程 1
 void *thread_1(void *)
 {
