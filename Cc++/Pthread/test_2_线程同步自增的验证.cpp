@@ -12,7 +12,7 @@
 #include <pthread.h>
 #include <errno.h>
 
-static int a;
+static volatile int a;
 
 void *Fun1(void *)
 {
