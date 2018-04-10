@@ -47,7 +47,9 @@ a.out: cxa_atexit.c:100: __new_exitfn: Assertion `l != NULL' failed.
 
 **前面说了return会弹出栈, 并且释放局部变量, 而<font color#b20>使用exit()函数, 他会直接进入内核, 在程序死亡的时侯, 才会为程序释放所有的空间, 内核也就可以回收空间. 这也就知道exit函数并不会调用函数栈, exit是通知进程叫进程自杀. 而且规定了调用vfork绝对不能调用return</font>**
 
-**还有一点, 在c++中调用return会调用析构函数, 而使用exit函数就不会调用析构函数.** 如下 :
+**还有一点, 在c++中调用return会调用析构函数, 而使用exit函数就不会调用析构函数.** 
+
+**exit还有两个宏定义的参数 : EXIT_SUCCESS, EXIT_SUCCESS, 当然EXIT_SUCCESS == 0**如下 :
 
 ```c
 #include <stdio.h>
@@ -82,7 +84,7 @@ int main(void)
     printf("exit\n");
     {
         Temp temp;
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
 }
 ```

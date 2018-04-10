@@ -81,9 +81,9 @@ void *Boarding(void *board)
 		// 人数为 0 : sv == 0, 只能上车, 阻塞下车
 		if (num == 0)
 			sem_post(&sem);
-		num = rand() % 5 + 1;
+		num = rand() % 2 + 1;
 		Write("Board\n");
-		//sleep(1);
+		usleep(1000 * 10);
 	}
 
 	// 解锁
@@ -105,6 +105,7 @@ void *Get_off(void *off)
 		num = num - n ? num - n : 0;
 		Write("get off\n");
 		//sleep(1);
+		usleep(1000 * 10);
 	}
 
 	pthread_exit((void *)0);
