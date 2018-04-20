@@ -7,6 +7,8 @@
 
 #include <stdio.h>
 #include "apue.h"
+#include <unistd.h>
+#include <stdlib.h>
 
 int val = 10;
 
@@ -24,6 +26,7 @@ int main()
 		val++;
 		num++;
 		_exit(0);
+		// exit(0);
 	}
 	
 	printf("pid = %d\nval = %d\nnum = %d\n", pid, val, num);

@@ -98,7 +98,7 @@
 #include <stdlib.h>
 #include <time.h>
 
- const int MAX = 100;
+const int MAX = 100;
 struct timeval tt;
 
 int main(void)

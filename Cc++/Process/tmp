@@ -1,0 +1,7 @@
+vfork:
+pid = 0
+val = 11
+num = 1
+pid = 2342
+val = 11
+num = 1

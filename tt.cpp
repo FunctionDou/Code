@@ -1,50 +1,46 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/shm.h>
-#include <pthread.h>
 
-const int addr = 0x8888;
-
-struct Produce_Consume
+// 工作队列结构
+struct workqueue_struct
 {
-    int food;
-    pthread_mutex_t mutex;
+  struct cpu_workqueue_struct cpu_wq[NR_CPUS];
+  struct list_head list;
+  const char *name;
+  int sinqlethread;
+  int freezeable;
+  int rt;
 };
 
-int main(int argc, char *argv[])
+// 工作队列的执行
+for( ; ; )
 {
-    int id;
-    // 创建一个共享空间
-    if(argv[1][0] == 'i')
-        id = shmget(addr, sizeof(Produce_Consume), IPC_CREAT | IPC_EXCL | 0664);
-    else 
-        id = shmget(addr, 0, 0);
+  // TASK_INTERRUPTIBLE : 工作队列设置为等待
+  prepare_to_wait(&cwq->more_work, &wait, TASK_INTERRUPTIBLE);
 
-    // 设置一个线程属性
-    pthread_mutexattr_t mutexattr;
-    // 初始化属性
-    pthread_mutexattr_init(&mutexattr);
-    // 将线程属性设置为设置为在不同进程间进行同步
-    pthread_mutexattr_setpshared(&mutexattr, PTHREAD_PROCESS_SHARED);
-    
-    //  连接到共享内存
-    struct Produce_Consume *pro_con = (struct Produce_Consume *)shmat(id, NULL, 0);
-    
-    // 先初始化生产的数量
-    pro_con->food = 2;
-    // 初始化结构体中的互斥锁属性
-    pthread_mutex_init(&pro_con->mutex, &mutexattr);
-    // 删除不用的属性了
-    pthread_mutexattr_destroy(&mutexattr);
+  // 如果工作队列是一个空链表, 那么就进行调度, 工作队列休眠
+  if(list_empty(&cwq->worklist))
+    shedule();
 
-    // 将内存进行映射
-    shmdt((void *)pro_con);
+  // 工作队列链表非空, 就将其要执行的进行分离
+  finish_wait(&cwq->more_work, &wait);
+  // 执行上一步分离的工作.
+  run_workqueue(cwq);
+};
 
-    // 删除共享内存
-    if(argv[1][0] == 'd')
-        shmctl(id, IPC_RMID, NULL);
+// run_workqueue() 的部分代码
+while(!list_empty(&cwq->worklist))
+{
+  struct work_struct *work;
+  work_func_t f;
+  void *data;
 
-    exit(EXIT_SUCCESS);
+  // 执行工作
+  work = list_entry(cwq->worklist.next, struct work_struct, entry);
+  f = work->func;
+
+  // 清除执行了的工作
+  list_del_init(cwq->worklist.next);
+  work_clear_pending(work);
+
+  // 重复执行
+  f(work);
 }
